@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package pipeline;
+
+service VideoProcessor {
+    rpc CreateShortVideo (VideoRequest) returns (VideoResponse) {}
+}
+
+service MovementDetector {
+    rpc DetectMovement (ImageRequest) returns (DetectionResponse) {}
+}
+
+service ObjectDetector {
+    rpc DetectObjects (ImageRequest) returns (ObjectsResponse) {}
+}
+
+service Transcriber {
+    rpc Transcribe (AudioRequest) returns (TextResponse) {}
+}
+
+service Captioner {
+    rpc GenerateCaption (VideoRequest) returns (TextResponse) {}
+}
+
+service Describer {
+    rpc GenerateDescription (ContentRequest) returns (TextResponse) {}
+}
+
+service RssCreator {
+    rpc CreateRssEntry (RssRequest) returns (RssResponse) {}
+}
+
+message VideoRequest {
+    bytes video_data = 1;
+    string format = 2;
+}
+
+message VideoResponse {
+    bytes processed_video = 1;
+    string format = 2;
+}
+
+message ImageRequest {
+    bytes image_data = 1;
+    string format = 2;
+}
+
+message DetectionResponse {
+    repeated Detection detections = 1;
+}
+
+message Detection {
+    float confidence = 1;
+    BoundingBox bbox = 2;
+    string class_name = 3;
+}
+
+message BoundingBox {
+    float x = 1;
+    float y = 2;
+    float width = 3;
+    float height = 4;
+}
+
+message AudioRequest {
+    bytes audio_data = 1;
+    string format = 2;
+}
+
+message TextResponse {
+    string text = 1;
+}
+
+message ContentRequest {
+    string content = 1;
+}
+
+message ObjectsResponse {
+    repeated string objects = 1;
+}
+
+message RssRequest {
+    string title = 1;
+    string description = 2;
+    string content = 3;
+    string timestamp = 4;
+}
+
+message RssResponse {
+    string rss_xml = 1;
+}
