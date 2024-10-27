@@ -8,7 +8,7 @@ setup(
         "grpcio>=1.44.0,<2.0.0",
         "grpcio-tools>=1.44.0,<2.0.0",
         "opencv-python>=4.5.5.64",
-        "numpy>=1.22.0,<1.24.0",  # Compatible with tensorflow
+        "numpy>=1.26.0",  # Updated for Python 3.12 compatibility
         "pytest>=7.1.1",
         "protobuf>=3.20.3,<5.0.0dev",  # Compatible with tensorflow and mediapipe
     ],
