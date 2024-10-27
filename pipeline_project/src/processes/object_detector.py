@@ -1,6 +1,6 @@
 import grpc
-from pipeline_pb2 import ImageRequest, ObjectsResponse
-from pipeline_pb2_grpc import ObjectDetectorServicer
+from pipeline_project.src.pipeline_pb2 import ImageRequest, ObjectsResponse
+from pipeline_project.src.pipeline_pb2_grpc import ObjectDetectorServicer
 import cv2
 import numpy as np
 

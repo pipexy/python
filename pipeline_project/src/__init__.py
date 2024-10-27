@@ -1,0 +1,3 @@
+"""
+Pipeline Project package initialization.
+"""

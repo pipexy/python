@@ -1,6 +1,6 @@
 import grpc
-from pipeline_pb2 import RssRequest, RssResponse
-from pipeline_pb2_grpc import RssCreatorServicer
+from pipeline_project.src.pipeline_pb2 import RssRequest, RssResponse
+from pipeline_project.src.pipeline_pb2_grpc import RssCreatorServicer
 from datetime import datetime
 
 class RssCreator(RssCreatorServicer):

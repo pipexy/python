@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
-from src.processes.transcriber import Transcriber
-from pipeline_pb2 import AudioRequest
+from pipeline_project.src.processes.transcriber import Transcriber
+from pipeline_project.src.pipeline_pb2 import AudioRequest
 
 class TestTranscriber(unittest.TestCase):
     def setUp(self):

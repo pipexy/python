@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 from pipeline_project.src.processes.rss_creator import RssCreator
-from pipeline_pb2 import RssRequest
+from pipeline_project.src.pipeline_pb2 import RssRequest
 
 class TestRssCreator(unittest.TestCase):
     def setUp(self):

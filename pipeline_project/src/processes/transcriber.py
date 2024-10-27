@@ -1,6 +1,6 @@
 import grpc
-from pipeline_pb2 import AudioRequest, TextResponse
-from pipeline_pb2_grpc import TranscriberServicer
+from pipeline_project.src.pipeline_pb2 import AudioRequest, TextResponse
+from pipeline_project.src.pipeline_pb2_grpc import TranscriberServicer
 
 class Transcriber(TranscriberServicer):
     def Transcribe(self, request, context):

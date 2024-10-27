@@ -1,6 +1,6 @@
 import grpc
-from pipeline_pb2 import ContentRequest, TextResponse
-from pipeline_pb2_grpc import DescriberServicer
+from pipeline_project.src.pipeline_pb2 import ContentRequest, TextResponse
+from pipeline_project.src.pipeline_pb2_grpc import DescriberServicer
 
 class Describer(DescriberServicer):
     def GenerateDescription(self, request, context):

@@ -2,14 +2,14 @@ import unittest
 import numpy as np
 import cv2
 from unittest.mock import Mock
-from pipeline_project.src.processes.captioner import Captioner
+from pipeline_project.src.processes.video_processor import VideoProcessor
 from pipeline_project.src.pipeline_pb2 import VideoRequest
 
-class TestCaptioner(unittest.TestCase):
+class TestVideoProcessor(unittest.TestCase):
     def setUp(self):
-        self.captioner = Captioner()
+        self.processor = VideoProcessor()
         
-    def test_generate_caption(self):
+    def test_create_short_video(self):
         # Przygotowanie danych testowych
         test_video = np.zeros((480, 640, 3), dtype=np.uint8)
         _, buffer = cv2.imencode('.mp4', test_video)
@@ -17,9 +17,9 @@ class TestCaptioner(unittest.TestCase):
         
         # Wywołanie metody
         context = Mock()
-        response = self.captioner.GenerateCaption(request, context)
+        response = self.processor.CreateShortVideo(request, context)
         
         # Sprawdzenie rezultatu
         self.assertIsNotNone(response)
-        self.assertIsInstance(response.text, str)
-        self.assertGreater(len(response.text), 0)
+        self.assertEqual(response.format, 'mp4')
+        self.assertGreater(len(response.processed_video), 0)

@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 from unittest.mock import Mock
 from pipeline_project.src.processes.object_detector import ObjectDetector
-from pipeline_pb2 import ImageRequest
+from pipeline_project.src.pipeline_pb2 import ImageRequest
 
 class TestObjectDetector(unittest.TestCase):
     def setUp(self):

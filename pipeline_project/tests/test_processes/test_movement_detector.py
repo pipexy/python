@@ -2,8 +2,8 @@ import unittest
 import numpy as np
 import cv2
 from unittest.mock import Mock
-from src.processes.movement_detector import MovementDetector
-from pipeline_pb2 import ImageRequest
+from pipeline_project.src.processes.movement_detector import MovementDetector
+from pipeline_project.src.pipeline_pb2 import ImageRequest
 
 class TestMovementDetector(unittest.TestCase):
     def setUp(self):

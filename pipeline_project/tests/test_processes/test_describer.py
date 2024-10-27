@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 from pipeline_project.src.processes.describer import Describer
-from pipeline_pb2 import ContentRequest
+from pipeline_project.src.pipeline_pb2 import ContentRequest
 
 class TestDescriber(unittest.TestCase):
     def setUp(self):

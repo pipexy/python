@@ -1,6 +1,6 @@
 import grpc
-from pipeline_pb2 import VideoRequest, TextResponse
-from pipeline_pb2_grpc import CaptionerServicer
+from pipeline_project.src.pipeline_pb2 import VideoRequest, TextResponse
+from pipeline_project.src.pipeline_pb2_grpc import CaptionerServicer
 import cv2
 import numpy as np
 
