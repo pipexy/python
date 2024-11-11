@@ -9,6 +9,14 @@ from src.processes.movement_detector import MovementDetector
 from src.pipeline import Pipeline, PipelineExecutor
 import pipeline_pb2_grpc
 
+# get RTSP variable from env
+RTSP_URL = os.getenv("RTSP_URL")
+
+if not RTSP_URL:
+    raise ValueError("RTSP_URL environment variable is required")
+
+# Ustawienie logowania
+
 
 def serve():
     # Utworzenie serwera gRPC
@@ -36,7 +44,7 @@ def serve():
 def run_pipeline():
     # Utworzenie i uruchomienie pipeline'u
     pipeline = (Pipeline()
-                .input("rtsp://localhost:554/stream")
+                .input(RTSP_URL)
                 .data("grpc://localhost:50051/create-short_video", "MP4")
                 .data("grpc://localhost:50051/detect-movement", "JPG")
                 .data("grpc://localhost:50051/detect-object", "TEXT")
@@ -44,7 +52,7 @@ def run_pipeline():
                 .data("grpc://localhost:50051/captioning", "TEXT")
                 .data("grpc://localhost:50051/description", "TEXT")
                 .data("grpc://localhost:50051/create-rss", "XML")
-                .output("rss://localhost/events"))
+                .output("rss://localhost:8081/events"))
 
     executor = PipelineExecutor(pipeline)
     executor.execute()

@@ -1,72 +1,114 @@
-# DataPipeX
+# RTSP to FTP Video Pipeline
 
-DataPipeX is a powerful, extensible framework for building distributed data processing pipelines using gRPC and Python. It specializes in handling multimedia data streams, performing real-time analysis, and generating structured output.
+This project implements a pipeline that captures video from an RTSP stream and saves it in segments to an FTP server. The pipeline is containerized using Docker and can be easily deployed using Docker Compose.
 
 ## Features
 
-- **Flexible Pipeline Architecture**: Build complex data processing workflows with ease
-- **gRPC-based Communication**: Efficient, scalable inter-process communication
-- **Modular Design**: Easy to extend with new processing capabilities
-- **Built-in Processors**:
-  - Video processing
-  - Motion detection
-  - Object detection
-  - Speech transcription
-  - Caption generation
-  - Content description
-  - RSS feed generation
-- **Comprehensive Testing**: Unit tests and integration tests included
-- **Well-documented**: Full documentation and examples provided
+- Captures video from RTSP streams
+- Segments video into configurable duration chunks
+- Automatically uploads video segments to FTP server
+- Containerized deployment with Docker
+- Includes test RTSP stream server for development
+
+## Prerequisites
+
+- Docker
+- Docker Compose
+
+## Configuration
+
+The pipeline is configured using environment variables in the `.env` file. Copy the example configuration file and modify as needed:
+
+```bash
+cp .env.example .env
+```
+
+### Environment Variables
+
+#### RTSP Configuration
+- `RTSP_URL`: URL of the RTSP stream
+- `SEGMENT_DURATION`: Duration of video segments in seconds
+
+#### FTP Configuration
+- `FTP_HOST`: Hostname of the FTP server
+- `FTP_USER`: FTP username for pipeline
+- `FTP_PASS`: FTP password for pipeline
+- `FTP_DIR`: Directory on FTP server for video storage
+
+#### FTP Server Configuration
+- `FTP_SERVER_USER`: Username for FTP server
+- `FTP_SERVER_PASS`: Password for FTP server
+- `PASV_ADDRESS`: Passive mode address
+- `PASV_MIN_PORT`: Minimum port for passive mode range
+- `PASV_MAX_PORT`: Maximum port for passive mode range
 
 ## Quick Start
 
-### Installation
-
+1. Clone the repository:
 ```bash
-# Clone repository
-git clone https://github.com/your-org/datapipex.git
-cd datapipex
-
-# Set up virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Generate gRPC code
-python -m grpc_tools.protoc -I./proto --python_out=. --grpc_python_out=. proto/pipeline.proto
+git clone <repository-url>
+cd <repository-directory>
 ```
 
-### Basic Usage
-
-```python
-from datapipex import Pipeline
-
-# Create and execute pipeline
-pipeline = (Pipeline()
-    .input("rtsp://localhost:554/stream")
-    .data("grpc://localhost:50051/create-short_video", "MP4")
-    .data("grpc://localhost:50051/detect-movement", "JPG")
-    .output("rss://localhost/events"))
-
-pipeline.execute()
+2. Configure environment:
+```bash
+cp .env.example .env
+# Edit .env file with your configuration
 ```
 
-## Documentation
+3. Start the services:
+```bash
+docker-compose up -d
+```
 
-Full documentation is available in the [docs](docs/) directory or at [https://datapipex.readthedocs.io](https://datapipex.readthedocs.io).
+This will start:
+- An FTP server
+- A test RTSP stream server
+- The RTSP to FTP pipeline
 
-## Contributing
+4. Monitor the logs:
+```bash
+docker-compose logs -f pipeline
+```
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+## Development Setup
 
-## License
+The docker-compose.yml includes a test environment with:
+- An FTP server (fauria/vsftpd)
+- An RTSP simulator (aler9/rtsp-simple-server)
+- The pipeline service
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Default test credentials are provided in `.env.example`.
 
-## Support
+## Directory Structure
 
-- Issue Tracker: GitHub Issues
-- Documentation: [https://datapipex.readthedocs.io](https://datapipex.readthedocs.io)
-- Discussion: GitHub Discussions
+```
+.
+├── src/
+│   └── processes/
+│       └── rtsp_processor.py    # Main RTSP processing logic
+├── docker-compose.yml          # Docker Compose configuration
+├── Dockerfile                  # Pipeline service Dockerfile
+├── requirements.txt           # Python dependencies
+├── rtsp_pipeline.py          # Main entry point
+├── .env                      # Environment configuration
+└── .env.example             # Example environment configuration
+```
+
+## Testing
+
+The included docker-compose setup provides a complete test environment. Video segments will be saved in the ./ftp_data directory, which is mounted to the FTP container.
+
+To test with your own RTSP stream:
+1. Modify the RTSP_URL in your .env file
+2. Restart the services:
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+## Stopping the Services
+
+To stop all services:
+```bash
+docker-compose down

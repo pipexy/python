@@ -72,6 +72,11 @@ pip install -r requirements.txt
 
 # Generate gRPC code
 python -m grpc_tools.protoc -I./proto --python_out=. --grpc_python_out=. proto/pipeline.proto
+
+# Start server
+python pipeline_runner.py
+
+python rtsp_pipeline.py
 ```
 
 ## Architecture
@@ -273,6 +278,8 @@ python -m pytest --cov=src tests/
 ```bash
 # Start server
 python pipeline_runner.py
+
+python rtsp_runner.py
 
 # In another terminal, run pipeline
 python run_pipeline.py

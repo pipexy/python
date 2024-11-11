@@ -1,0 +1,201 @@
+pipelines:
+  - name: from rtsp to rss with object recognition
+    startup:
+      # Start gRPC object detection service
+      - grpc://detector/start?model=yolov5&confidence=0.5
+      # Start RSS feed server
+      - rss://feed/create?title=ObjectDetections&description=Live object detections
+    tasks:
+      - input: rtsp://192.168.1.100:554/stream1
+        process: grpc://detector/detect_objects?batch_size=1&timeout=1.0
+        callback: grpc://alert-service:50052/RegisterCallback
+
+      - input: sensor://temp/room1
+        process: grpc://localhost:50051/TemperatureMonitor
+        callback: grpc://alert-service:50052/RegisterCallback
+
+    callback:
+      "grpc://alert-service:50052/RegisterCallback":
+        # Save detections to file
+        - rss://feed/publish?format=json&max_items=100
+        - file://logs/detections.json?mode=append
+        # Notify on specific objects
+        - webhook://alerts.example.com/incoming
+        - http://webhook/alert?objects=person,car
+
+
+  - name: security_detection
+    startup:
+      # Start gRPC object detection service
+      - grpc://detector/start?model=yolov5&confidence=0.5
+      # Start RSS feed server
+      - rss://feed/create?title=ObjectDetections&description=Live object detections
+
+    tasks:
+      # Main task that captures RTSP frames and sends to gRPC
+      - input: rtsp://camera1/stream?fps=5&format=jpeg
+        process: grpc://detector/detect_objects?batch_size=1&timeout=1.0
+        output: rss://feed/publish?format=json&max_items=100
+
+    callbacks:
+      # Save detections to file
+      - file://logs/detections.json?mode=append
+      # Notify on specific objects
+      - http://webhook/alert?objects=person,car
+
+alert_service:
+  notifiers:
+    slack:
+      webhook_url: https://hooks.slack.com/...
+    email:
+      smtp_server: smtp.gmail.com
+      smtp_port: 587
+      username: alerts@company.com
+      password: ${EMAIL_PASSWORD}
+
+# Example 1: System monitoringu z detekcją obiektów
+pipelines:
+  - name: security_monitoring
+    startup:
+      - grpc://detector:50051/start?model=yolov5&confidence=0.6
+      - grpc://face-detector:50052/start?model=face_recognition&min_size=80
+    tasks:
+      # Kamera 1 - monitoring wejścia
+      - input: rtsp://camera1.local:554/entrance?fps=15
+        process: grpc://detector:50051/detect_objects?classes=person,vehicle
+        callback: grpc://alert-service:50052/RegisterCallback
+
+      # Kamera 2 - monitoring parkingu
+      - input: rtsp://camera2.local:554/parking?fps=10
+        process: grpc://detector:50051/detect_objects?classes=car,truck,bicycle
+        callback: grpc://alert-service:50052/RegisterCallback
+
+      # Kamera 3 - rozpoznawanie twarzy
+      - input: rtsp://camera3.local:554/reception?fps=5
+        process: grpc://face-detector:50052/recognize_faces
+        callback: grpc://access-control:50053/RegisterCallback
+
+    callback:
+      "grpc://alert-service:50052/RegisterCallback":
+        "grpc://localhost:50051/convertData":
+          - file:///var/log/security/detections.json?mode=append
+        "grpc://localhost:50051/convertDataForAlerts":
+          - rss://security.local:8080/alerts?format=json&max_items=1000
+          - webhook://slack.com/api/security-alerts?token=${SLACK_TOKEN}
+
+      "grpc://access-control:50053/RegisterCallback":
+        "grpc://localhost:50051/convertData":
+          - grpc://door-control:50054/authorize_access
+        "grpc://localhost:50051/convertRSSData":
+          - rss://access.local:8080/events?format=json
+        "grpc://localhost:50051/convertMQTTData":
+          - mqtt://broker.local:1883/access/events
+
+# Example 2: System monitorowania produkcji
+pipelines:
+  - name: production_monitoring
+    startup:
+      - grpc://quality-control:50051/start?model=defect_detection
+      - grpc://metrics:50052/start?aggregation=1m
+    tasks:
+      # Kontrola jakości produktów
+      - input: rtsp://line1-camera:554/products?fps=30
+        process: grpc://quality-control:50051/detect_defects
+        callback: grpc://production-control:50053/RegisterQuality
+
+      # Monitoring temperatury
+      - input: sensor://temperature/line1?interval=1s
+        process: grpc://metrics:50052/aggregate_temperature
+        callback: grpc://monitoring:50054/RegisterMetrics
+
+      # Monitoring wibracji
+      - input: sensor://vibration/machine1?interval=100ms
+        process: grpc://metrics:50052/analyze_vibration
+        callback: grpc://monitoring:50054/RegisterMetrics
+
+    callback:
+      "grpc://production-control:50053/RegisterQuality":
+        - mqtt://broker:1883/production/quality
+        - influxdb://metrics:8086/write?db=production&measurement=quality
+        - webhook://teams.microsoft.com/quality-alerts
+
+      "grpc://monitoring:50054/RegisterMetrics":
+        - prometheus://metrics:9090/push?job=production
+        - graphite://metrics:2003/production.metrics
+        - file:///var/log/production/metrics.json?rotate=daily
+
+# Example 3: System przetwarzania danych IoT
+pipelines:
+  - name: iot_data_processing
+    startup:
+      - grpc://anomaly-detector:50051/start?model=isolation_forest
+      - grpc://forecasting:50052/start?model=prophet
+    tasks:
+      # Dane z czujników Smart Home
+      - input: mqtt://broker.local:1883/home/sensors/#
+        process: grpc://anomaly-detector:50051/detect_anomalies
+        callback: grpc://home-control:50053/RegisterAnomaly
+
+      # Dane pogodowe
+      - input: http://weather-api:8080/data?interval=5m
+        process: grpc://forecasting:50052/predict_weather
+        callback: grpc://notifications:50054/RegisterForecast
+
+      # Dane zużycia energii
+      - input: modbus://energy-meter:502/readings?interval=1m
+        process: grpc://metrics:50055/aggregate_energy
+        callback: grpc://billing:50056/RegisterConsumption
+
+    callback:
+      "grpc://home-control:50053/RegisterAnomaly":
+        - mqtt://broker:1883/home/alerts
+        - http://home-assistant:8123/api/events/anomaly
+        - telegram://bot:${BOT_TOKEN}/send_alert
+
+      "grpc://notifications:50054/RegisterForecast":
+        - rss://weather.local:8080/forecast
+        - mqtt://broker:1883/weather/forecast
+        - redis://cache:6379/weather/current
+
+      "grpc://billing:50056/RegisterConsumption":
+        - kafka://broker:9092/energy.consumption
+        - influxdb://metrics:8086/write?db=energy
+        - file:///var/log/energy/consumption.csv?rotate=monthly
+
+# Example 4: System analizy danych biznesowych
+pipelines:
+  - name: business_analytics
+    startup:
+      - grpc://nlp:50051/start?model=sentiment&language=pl
+      - grpc://trends:50052/start?interval=1h
+    tasks:
+      # Analiza mediów społecznościowych
+      - input: twitter://api/stream?keywords=brand,product
+        process: grpc://nlp:50051/analyze_sentiment
+        callback: grpc://marketing:50053/RegisterSentiment
+
+      # Monitoring konkurencji
+      - input: rss://competitor.com/news?interval=15m
+        process: grpc://nlp:50051/extract_entities
+        callback: grpc://market-research:50054/RegisterCompetitor
+
+      # Analiza sprzedaży
+      - input: postgresql://sales:5432/transactions?query=latest
+        process: grpc://trends:50052/analyze_sales
+        callback: grpc://reporting:50055/RegisterSales
+
+    callback:
+      "grpc://marketing:50053/RegisterSentiment":
+        - elasticsearch://analytics:9200/sentiment
+        - slack://marketing-team/sentiment-alerts
+        - bigquery://project/dataset.sentiment_analysis
+
+      "grpc://market-research:50054/RegisterCompetitor":
+        - mongodb://analytics:27017/competitor_news
+        - email://team@company.com?subject=competitor_update
+        - sharepoint://company/market-research/updates
+
+      "grpc://reporting:50055/RegisterSales":
+        - grafana://dashboard:3000/sales
+        - s3://reports/sales/daily?format=parquet
+        - tableau://server/refresh/sales_dashboard

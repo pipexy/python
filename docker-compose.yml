@@ -1,0 +1,47 @@
+services:
+  ftp:
+    image: fauria/vsftpd
+    environment:
+      - FTP_USER=${FTP_SERVER_USER}
+      - FTP_PASS=${FTP_SERVER_PASS}
+      - PASV_ADDRESS=${PASV_ADDRESS}
+      - PASV_MIN_PORT=${PASV_MIN_PORT}
+      - PASV_MAX_PORT=${PASV_MAX_PORT}
+    ports:
+      - "21:21"
+      - "21100-21110:21100-21110"
+    volumes:
+      - ./ftp_data:/home/vsftpd/${FTP_SERVER_USER}
+    networks:
+      - pipeline_network
+
+  rtsp-simulator:
+    hostname: rtsp-simulator
+    image: bluenviron/mediamtx
+    ports:
+      - "8554:8554"
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml
+    networks:
+      - pipeline_network
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - RTSP_URL=${RTSP_URL}
+      - FTP_HOST=${FTP_HOST}
+      - FTP_USER=${FTP_USER}
+      - FTP_PASS=${FTP_PASS}
+      - FTP_DIR=${FTP_DIR}
+      - SEGMENT_DURATION=${SEGMENT_DURATION}
+    depends_on:
+      - ftp
+      - rtsp-simulator
+    networks:
+      - pipeline_network
+
+networks:
+  pipeline_network:
+    driver: bridge
