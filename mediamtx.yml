@@ -1,6 +1,4 @@
 paths:
   test:
-    # Provide a test source that generates a dummy stream
-    source: videotestsrc
-    # Automatically start the stream
+    source: generate:videotestsrc
     sourceOnDemand: false

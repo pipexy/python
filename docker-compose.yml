@@ -16,12 +16,13 @@ services:
       - pipeline_network
 
   rtsp-simulator:
-    hostname: rtsp-simulator
     image: bluenviron/mediamtx
     ports:
       - "8554:8554"
     volumes:
       - ./mediamtx.yml:/mediamtx.yml
+    environment:
+      - MTX_PATHS_TEST_SOURCE=generate:videotestsrc
     networks:
       - pipeline_network
 
@@ -30,8 +31,8 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - RTSP_URL=${RTSP_URL}
-      - FTP_HOST=${FTP_HOST}
+      - RTSP_URL=rtsp://localhost:8554/test
+      - FTP_HOST=ftp
       - FTP_USER=${FTP_USER}
       - FTP_PASS=${FTP_PASS}
       - FTP_DIR=${FTP_DIR}
